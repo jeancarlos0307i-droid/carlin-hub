@@ -1,0 +1,305 @@
+--==================================================
+-- CARLIN HUB | RAYFIELD + KEY SYSTEM VERDE
+--==================================================
+
+-- SERVICES
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local Camera = workspace.CurrentCamera
+local setclipboard = setclipboard or toclipboard or set_clipboard or (Clipboard and Clipboard.set)
+
+-- KEYS
+local ValidKeys = {
+	["Uhdkaklwa"] = true,
+	["waoadlaw"] = true,
+	["waodlmka"] = true,
+	["waljnsakld"] = true,
+	["wandlkas"] = true,
+	["waionamrg"] = true,
+	["piaefnmk"] = true,
+	["carlinhub"] = true,
+}
+
+local KeyLink = "https://link-hub.net/2522978/BpUM7NTn9gxm"
+
+--==================================================
+-- KEY SYSTEM GUI
+--==================================================
+
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+ScreenGui.Name = "CarlinKeyGUI"
+
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.fromOffset(360, 220)
+Frame.Position = UDim2.fromScale(0.5, 0.5)
+Frame.AnchorPoint = Vector2.new(0.5, 0.5)
+Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
+
+local UICorner = Instance.new("UICorner", Frame)
+UICorner.CornerRadius = UDim.new(0, 10)
+
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1,0,0,40)
+Title.Text = "Carlin Hub | Key System"
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Color3.fromRGB(0,255,120)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
+
+local KeyBox = Instance.new("TextBox", Frame)
+KeyBox.Size = UDim2.fromOffset(300, 36)
+KeyBox.Position = UDim2.fromOffset(30, 60)
+KeyBox.PlaceholderText = "Digite sua key"
+KeyBox.Text = ""
+KeyBox.BackgroundColor3 = Color3.fromRGB(30,30,30)
+KeyBox.TextColor3 = Color3.new(1,1,1)
+KeyBox.Font = Enum.Font.Gotham
+KeyBox.TextSize = 14
+
+Instance.new("UICorner", KeyBox).CornerRadius = UDim.new(0,6)
+
+local function MakeButton(text, y)
+	local b = Instance.new("TextButton", Frame)
+	b.Size = UDim2.fromOffset(300, 36)
+	b.Position = UDim2.fromOffset(30, y)
+	b.Text = text
+	b.BackgroundColor3 = Color3.fromRGB(0, 170, 90)
+	b.TextColor3 = Color3.new(1,1,1)
+	b.Font = Enum.Font.GothamBold
+	b.TextSize = 14
+	Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
+	return b
+end
+
+local GetKeyBtn = MakeButton("Pegar Key", 110)
+local CheckKeyBtn = MakeButton("Verificar Key", 155)
+
+GetKeyBtn.MouseButton1Click:Connect(function()
+	if setclipboard then
+		setclipboard(KeyLink)
+	end
+	GetKeyBtn.Text = "Link Copiado!"
+	task.wait(1)
+	GetKeyBtn.Text = "Pegar Key"
+end)
+
+--==================================================
+-- LOAD RAYFIELD
+--==================================================
+
+local Rayfield
+local Window
+
+local function LoadHub()
+	ScreenGui:Destroy()
+
+	Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+	Window = Rayfield:CreateWindow({
+		Name = "Carlin Hub",
+		LoadingTitle = "Carlin Hub",
+		LoadingSubtitle = "by Carlin",
+		ConfigurationSaving = {Enabled = false}
+	})
+
+	--================ PLAYER TAB =================
+	local PlayerTab = Window:CreateTab("Player", 4483362458)
+
+	PlayerTab:CreateSlider({
+		Name = "WalkSpeed",
+		Range = {16, 200},
+		Increment = 1,
+		CurrentValue = 16,
+		Callback = function(v)
+			if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+				LocalPlayer.Character.Humanoid.WalkSpeed = v
+			end
+		end
+	})
+
+	PlayerTab:CreateSlider({
+		Name = "JumpPower",
+		Range = {50, 300},
+		Increment = 5,
+		CurrentValue = 50,
+		Callback = function(v)
+			if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+				LocalPlayer.Character.Humanoid.JumpPower = v
+			end
+		end
+	})
+
+	PlayerTab:CreateSlider({
+		Name = "Gravity",
+		Range = {0, 196},
+		Increment = 1,
+		CurrentValue = workspace.Gravity,
+		Callback = function(v)
+			workspace.Gravity = v
+		end
+	})
+
+	--================ MOVEMENT TAB =================
+	local MoveTab = Window:CreateTab("Movement", 4483362458)
+
+	local noclip = false
+	MoveTab:CreateToggle({
+		Name = "Noclip",
+		CurrentValue = false,
+		Callback = function(v)
+			noclip = v
+		end
+	})
+
+	RunService.Stepped:Connect(function()
+		if noclip and LocalPlayer.Character then
+			for _,v in pairs(LocalPlayer.Character:GetDescendants()) do
+				if v:IsA("BasePart") then
+					v.CanCollide = false
+				end
+			end
+		end
+	end)
+
+	local fly = false
+	local bv, bg
+
+	MoveTab:CreateToggle({
+		Name = "Fly",
+		CurrentValue = false,
+		Callback = function(v)
+			fly = v
+			if fly then
+				local hrp = LocalPlayer.Character.HumanoidRootPart
+				bv = Instance.new("BodyVelocity", hrp)
+				bg = Instance.new("BodyGyro", hrp)
+				bv.MaxForce = Vector3.new(1,1,1)*1e5
+				bg.MaxTorque = Vector3.new(1,1,1)*1e5
+			else
+				if bv then bv:Destroy() end
+				if bg then bg:Destroy() end
+			end
+		end
+	})
+
+	RunService.RenderStepped:Connect(function()
+		if fly and LocalPlayer.Character then
+			local cam = Camera
+			local dir = Vector3.zero
+			if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir += cam.CFrame.LookVector end
+			if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir -= cam.CFrame.LookVector end
+			if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir -= cam.CFrame.RightVector end
+			if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir += cam.CFrame.RightVector end
+			bv.Velocity = dir * 60
+			bg.CFrame = cam.CFrame
+		end
+	end)
+
+	MoveTab:CreateToggle({
+		Name = "TP Click",
+		CurrentValue = false,
+		Callback = function(v)
+			getgenv().ClickTP = v
+		end
+	})
+
+	Mouse.Button1Down:Connect(function()
+		if getgenv().ClickTP and LocalPlayer.Character then
+			LocalPlayer.Character.HumanoidRootPart.CFrame =
+				CFrame.new(Mouse.Hit.Position + Vector3.new(0,3,0))
+		end
+	end)
+
+	--================ HACK MOD TAB =================
+	local HackTab = Window:CreateTab("Hack Mod", 4483362458)
+
+	-- ESP
+	local ESPEnabled = false
+	local ESPColor = Color3.fromRGB(255,0,0)
+	local ESPObjects = {}
+
+	local function ClearESP()
+		for _,v in pairs(ESPObjects) do pcall(function() v:Destroy() end) end
+		ESPObjects = {}
+	end
+
+	local function ApplyESP()
+		ClearESP()
+		if not ESPEnabled then return end
+		for _,p in pairs(Players:GetPlayers()) do
+			if p ~= LocalPlayer and p.Character then
+				local h = Instance.new("Highlight", p.Character)
+				h.FillColor = ESPColor
+				h.OutlineColor = ESPColor
+				h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+				table.insert(ESPObjects, h)
+			end
+		end
+	end
+
+	HackTab:CreateToggle({
+		Name = "ESP",
+		CurrentValue = false,
+		Callback = function(v)
+			ESPEnabled = v
+			ApplyESP()
+		end
+	})
+
+	HackTab:CreateColorPicker({
+		Name = "ESP Color",
+		Color = ESPColor,
+		Callback = function(c)
+			ESPColor = c
+			if ESPEnabled then ApplyESP() end
+		end
+	})
+
+	-- AIMBOT
+	local Aimbot = false
+
+	HackTab:CreateToggle({
+		Name = "Aimbot",
+		CurrentValue = false,
+		Callback = function(v)
+			Aimbot = v
+		end
+	})
+
+	RunService.RenderStepped:Connect(function()
+		if not Aimbot then return end
+		local closest, dist = nil, math.huge
+		for _,p in pairs(Players:GetPlayers()) do
+			if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
+				local pos, onscreen = Camera:WorldToViewportPoint(p.Character.Head.Position)
+				if onscreen then
+					local d = (Vector2.new(pos.X,pos.Y) - Vector2.new(Mouse.X,Mouse.Y)).Magnitude
+					if d < dist then
+						dist = d
+						closest = p.Character.Head
+					end
+				end
+			end
+		end
+		if closest then
+			Camera.CFrame = CFrame.new(Camera.CFrame.Position, closest.Position)
+		end
+	end)
+end
+
+CheckKeyBtn.MouseButton1Click:Connect(function()
+	if ValidKeys[KeyBox.Text] then
+		LoadHub()
+	else
+		CheckKeyBtn.Text = "Key Inválida"
+		task.wait(1)
+		CheckKeyBtn.Text = "Verificar Key"
+	end
+end)
